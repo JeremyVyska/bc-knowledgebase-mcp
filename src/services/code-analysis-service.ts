@@ -113,7 +113,7 @@ export class CodeAnalysisService {
   private async loadPatterns(): Promise<ALCodePattern[]> {
     // Check cache first
     if (this.patternCache && Date.now() < this.cacheExpiry) {
-      console.log(
+      console.error(
         `🔍 Using cached patterns: ${this.patternCache.length} patterns`,
       );
       return this.patternCache;
@@ -123,7 +123,7 @@ export class CodeAnalysisService {
       // Get all code-pattern topics from the knowledge base
       const patternTopics =
         await this.knowledgeService.findTopicsByType("code-pattern");
-      console.log(
+      console.error(
         `🔍 Found ${patternTopics.length} code-pattern topics in knowledge base`,
       );
 
@@ -150,7 +150,7 @@ export class CodeAnalysisService {
       // This ensures we always have analysis capabilities
       const basePatterns =
         patterns.length > 0 ? patterns : this.getFallbackPatterns();
-      console.log(
+      console.error(
         `🔍 Using ${basePatterns.length} base patterns (${patterns.length > 0 ? "from knowledge base" : "fallback"})`,
       );
 
@@ -158,7 +158,7 @@ export class CodeAnalysisService {
       this.patternCache = [...basePatterns, ...orgStandards];
       this.cacheExpiry = Date.now() + this.CACHE_TTL;
 
-      console.log(
+      console.error(
         `🔍 Total patterns loaded: ${this.patternCache.length} (${basePatterns.length} base + ${orgStandards.length} org standards)`,
       );
 
@@ -194,7 +194,7 @@ export class CodeAnalysisService {
         standards.push(...guidelines);
       }
 
-      console.log(
+      console.error(
         `📋 Loaded ${standards.length} organization standards from knowledge layers (company + project)`,
       );
       return standards;
@@ -1101,7 +1101,7 @@ export class CodeAnalysisService {
         }
       }
 
-      console.log(
+      console.error(
         `✅ Checked ${companyStandards.length} organization standards (company + project), found ${violations.length} relevant guidelines`,
       );
     } catch (error) {
@@ -1283,7 +1283,7 @@ export class CodeAnalysisService {
             id.includes("/code-analysis/suggestions/"),
         );
 
-        console.log(
+        console.error(
           `🔍 Found ${suggestionTopicIds.length} code analysis suggestion topics in layers`,
         );
 
@@ -1307,14 +1307,14 @@ export class CodeAnalysisService {
               const suggestionText = this.extractSuggestionText(topic.content);
 
               suggestions.set(suggestionId, suggestionText);
-              console.log(
+              console.error(
                 `  ✓ Loaded suggestion: ${suggestionId} from layer ${resolution.sourceLayer}`,
               );
             }
           }
         }
 
-        console.log(
+        console.error(
           `📋 Loaded ${suggestions.size} code analysis suggestions from layers`,
         );
       }

@@ -35,7 +35,7 @@ export class ConfigurationValidator {
     const errors: ValidationError[] = [];
     const warnings: ConfigurationWarning[] = [];
 
-    console.log('🔍 Validating BCKB configuration...');
+    console.error('🔍 Validating BCKB configuration...');
 
     // 1. Basic structure validation
     this.validateBasicStructure(config, errors);
@@ -65,8 +65,8 @@ export class ConfigurationValidator {
       score
     };
 
-    console.log(`${result.valid ? '✅' : '❌'} Configuration validation complete`);
-    console.log(`   Errors: ${errors.length}, Warnings: ${warnings.length}, Score: ${score}/100`);
+    console.error(`${result.valid ? '✅' : '❌'} Configuration validation complete`);
+    console.error(`   Errors: ${errors.length}, Warnings: ${warnings.length}, Score: ${score}/100`);
 
     return result;
   }
