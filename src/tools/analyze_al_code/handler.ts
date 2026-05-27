@@ -65,7 +65,7 @@ export function createAnalyzeAlCodeHandler(services: any) {
     if (workspace_path) {
       // Scan workspace for .al files
       const alFiles = findAlFiles(workspace_path);
-      console.log(`📁 Found ${alFiles.length} .al files in workspace: ${workspace_path}`);
+      console.error(`📁 Found ${alFiles.length} .al files in workspace: ${workspace_path}`);
 
       for (const filePath of alFiles) {
         const content = readFileContent(filePath);
