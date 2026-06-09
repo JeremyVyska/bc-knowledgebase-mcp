@@ -218,6 +218,66 @@ describe('Workspace Management Tools', () => {
       expect(setWorkspaceInfoSpy).not.toHaveBeenCalled();
     });
 
+    it('should accept workspace_path as an alias for workspace_root', async () => {
+      const request: CallToolRequest = {
+        method: 'tools/call',
+        params: {
+          name: 'set_workspace_info',
+          arguments: {
+            workspace_path: 'C:/projects/my-bc-app',
+            available_mcps: []
+          }
+        }
+      };
+
+      const result = await setWorkspaceInfoHandler(request.params.arguments);
+      const response = JSON.parse(result.content[0].text);
+
+      expect(response.success).toBe(true);
+      expect(response.workspace_root).toBe('C:/projects/my-bc-app');
+      expect(setWorkspaceInfoSpy).toHaveBeenCalledWith('C:/projects/my-bc-app', []);
+    });
+
+    it('should prefer workspace_root when both workspace_root and workspace_path are provided', async () => {
+      const request: CallToolRequest = {
+        method: 'tools/call',
+        params: {
+          name: 'set_workspace_info',
+          arguments: {
+            workspace_root: 'C:/projects/primary',
+            workspace_path: 'C:/projects/alias',
+            available_mcps: []
+          }
+        }
+      };
+
+      const result = await setWorkspaceInfoHandler(request.params.arguments);
+      const response = JSON.parse(result.content[0].text);
+
+      expect(response.success).toBe(true);
+      expect(response.workspace_root).toBe('C:/projects/primary');
+      expect(setWorkspaceInfoSpy).toHaveBeenCalledWith('C:/projects/primary', []);
+    });
+
+    it('should still require a path when neither workspace_root nor workspace_path is provided', async () => {
+      const request: CallToolRequest = {
+        method: 'tools/call',
+        params: {
+          name: 'set_workspace_info',
+          arguments: {
+            available_mcps: []
+          }
+        }
+      };
+
+      const result = await setWorkspaceInfoHandler(request.params.arguments);
+      const response = JSON.parse(result.content[0].text);
+
+      expect(response.success).toBe(false);
+      expect(response.error).toBe('workspace_root is required');
+      expect(setWorkspaceInfoSpy).not.toHaveBeenCalled();
+    });
+
     it('should trigger layer reload when configured', async () => {
       setWorkspaceInfoSpy.mockResolvedValue({
         success: true,
@@ -370,6 +430,7 @@ describe('Workspace Management Tools', () => {
       expect(setWorkspaceInfoTool.name).toBe('set_workspace_info');
       expect(setWorkspaceInfoTool.description).toContain('workspace root');
       expect(setWorkspaceInfoTool.inputSchema.properties.workspace_root).toBeDefined();
+      expect(setWorkspaceInfoTool.inputSchema.properties.workspace_path).toBeDefined();
       expect(setWorkspaceInfoTool.inputSchema.properties.available_mcps).toBeDefined();
       expect(setWorkspaceInfoTool.inputSchema.required).toContain('workspace_root');
     });

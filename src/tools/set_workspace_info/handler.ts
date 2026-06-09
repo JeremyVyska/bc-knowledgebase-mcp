@@ -13,8 +13,11 @@ export interface SetWorkspaceInfoContext {
 export function createSetWorkspaceInfoHandler(services: any) {
   const context = services as SetWorkspaceInfoContext;
 
-  return async (args: { workspace_root: string; available_mcps?: string[] }) => {
-    const { workspace_root, available_mcps } = args;
+  return async (args: { workspace_root?: string; workspace_path?: string; available_mcps?: string[] }) => {
+    // Accept `workspace_path` as a backward-compatible alias for `workspace_root`.
+    // `workspace_root` takes precedence when both are supplied.
+    const workspace_root = args.workspace_root ?? args.workspace_path;
+    const { available_mcps } = args;
 
     if (!workspace_root) {
       return {
