@@ -1068,6 +1068,48 @@ ${enhancedResult.routingOptions.map((option) => `- ${option.replace("🎯 Start 
     return insights;
   }
 
+  /**
+   * Auto-initialize the workspace from the BC_INTEL_WORKSPACE_PATH environment
+   * variable, when provided by the host (e.g. the VS Code extension).
+   *
+   * Without this, the only way to set the workspace is for the client to call
+   * set_workspace_info with an explicit path. Some clients cannot reliably
+   * determine that path and end up passing a placeholder, which fails and loops.
+   * Reading the host-provided path here makes initialization deterministic and
+   * is a no-op when the variable is absent or points to a missing directory.
+   */
+  private async autoInitializeWorkspaceFromEnvironment(): Promise<void> {
+    const envPath = process.env["BC_INTEL_WORKSPACE_PATH"];
+    if (!envPath) {
+      return;
+    }
+
+    try {
+      const { existsSync } = await import("fs");
+      if (!existsSync(envPath)) {
+        console.error(
+          `⚠️ BC_INTEL_WORKSPACE_PATH is set but does not exist: ${envPath}`,
+        );
+        return;
+      }
+
+      console.error(
+        `📁 Auto-initializing workspace from BC_INTEL_WORKSPACE_PATH: ${envPath}`,
+      );
+      const result = await this.setWorkspaceInfo(envPath, this.availableMcps);
+      console.error(
+        result.success
+          ? `✅ ${result.message}`
+          : `⚠️ Auto-initialization failed: ${result.message}`,
+      );
+    } catch (error) {
+      console.error(
+        "⚠️ Failed to auto-initialize workspace from environment:",
+        error instanceof Error ? error.message : String(error),
+      );
+    }
+  }
+
   async run(): Promise<void> {
     try {
       // Ultra-early diagnostics for platform issues
@@ -1096,6 +1138,12 @@ ${enhancedResult.routingOptions.map((option) => `- ${option.replace("🎯 Start 
       // 1. If client calls set_workspace_info, that triggers initialization
       // 2. If client calls a tool directly, the tool waits and triggers initialization
       console.error("💡 Server ready. Services will initialize on first request or set_workspace_info call.");
+
+      // If the host (e.g. the VS Code extension) provided a workspace path via
+      // the BC_INTEL_WORKSPACE_PATH environment variable, initialize from it now.
+      // This breaks the chicken-and-egg loop where a client calls get_workspace_info
+      // (empty) and then guesses a placeholder path for set_workspace_info.
+      await this.autoInitializeWorkspaceFromEnvironment();
 
       // Server is ready to accept requests immediately
       // Tools will trigger initialization on first use if needed

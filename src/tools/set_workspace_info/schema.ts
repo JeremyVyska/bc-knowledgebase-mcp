@@ -16,6 +16,10 @@ export const setWorkspaceInfoTool: Tool = {
         type: 'string',
         description: 'Absolute path to the workspace/project root directory (e.g., C:/projects/my-bc-app or /home/user/projects/my-bc-app)'
       },
+      workspace_path: {
+        type: 'string',
+        description: 'Alias for workspace_root. Accepted for backward compatibility; if both are provided, workspace_root takes precedence.'
+      },
       available_mcps: {
         type: 'array',
         items: { type: 'string' },
